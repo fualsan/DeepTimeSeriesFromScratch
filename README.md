@@ -23,11 +23,17 @@ These implementations are designed to help understand the inner workings of thes
 - **Transformer**: A state-of-the-art model using attention mechanisms. Decoder based transformer is implemented for generative applications.
 
 ## Dataset
-This project uses the Air Passengers dataset, a classic time series dataset that records the monthly totals of international airline passengers from 1949 to 1960. The dataset is included in the repository (*airline-passengers.csv*).
+### Air Passengers Dataset
+A classic time series dataset that records the monthly totals of international airline passengers from 1949 to 1960. The dataset is included in the repository (*airline-passengers.csv*).
 
 The dataset contains the following columns:
 - `Month`: The month of the observation.
 - `Passengers`: The number of passengers carried by the airline.
+
+### Panama Electricty Load Forecasting
+A collection of data related to electricity consumption in Panama, specifically aimed at forecasting future electricity loads. This dataset typically includes historical records of electricity consumption, possibly broken down by region or time intervals (like hourly, daily, or monthly). It may also incorporate additional variables such as weather parameters (temperature, humidity, precipitation) and special days (public holidays, weekends) that could influence electricity demand.
+
+This is a multivariate dataset with many columns. For more info: [Kaggle dataset page](https://www.kaggle.com/datasets/pateljay731/panama-electricity-load-forecasting/)
 
 ## License
 This project is licensed under the MIT License - please see the [LICENSE](LICENSE) file for details.
