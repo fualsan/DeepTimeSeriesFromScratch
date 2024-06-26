@@ -4,36 +4,6 @@ import torch.nn as nn
 import math
 
 
-class Time2Vec(nn.Module):
-    def __init__(self, in_features, out_features, activation='sin'):
-        super(Time2Vec, self).__init__()
-        
-        self.in_features = in_features
-        self.out_features = out_features
-        
-        self.w0 = nn.Parameter(torch.randn(in_features, 1))
-        self.b0 = nn.Parameter(torch.randn(in_features, 1))
-        
-        self.w = nn.Parameter(torch.randn(in_features, out_features-1))
-        self.b = nn.Parameter(torch.randn(in_features, out_features-1))
-
-        if activation == 'sin':
-            self.act_fn = torch.sin
-        elif activation == 'cos':
-            self.act_fn = torch.cos
-        else:
-            raise ValueError(f'Invalid activation {activation}. Please choose sin or cos.')
-
-    def forward(self, x):
-        # Periodic features
-        periodic = self.act_fn(torch.matmul(x, self.w) + self.b)
-        # Non-periodic feature (single)
-        non_periodic = torch.matmul(x, self.w0) + self.b0
-        # Concat on features
-        time2vec_features = torch.cat([periodic, non_periodic], 2)
-        return time2vec_features
-
-
 # subsequent_mask
 # lower triangular mask matrix
 # (1 -> normal token, 0 -> mask token)
@@ -221,8 +191,7 @@ class GPTTimeSeries(nn.Module):
         self.forecast_size = forecast_size
 
         #self.token_emb = nn.Embedding(vocab_size, features_dim)
-        #self.input_projection = nn.Linear(input_features_size, features_dim)
-        self.input_projection = Time2Vec(input_features_size, features_dim)
+        self.input_projection = nn.Linear(input_features_size, features_dim)
         
         # Learnable position embbedings
         #self.position_emb = nn.Embedding(max_seq_len, features_dim)
