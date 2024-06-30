@@ -12,6 +12,7 @@ import math
 # pad_mask enc.attention_mask (from tokenizer)
 # both masks are in form: 1 -> normal token, 0 -> mask token
 
+
 class MultiHeadAttention(nn.Module):
     def __init__(self, features_dim, num_heads, use_bias, use_lookahead_mask=False):
         super().__init__()
@@ -132,7 +133,6 @@ class FeedForwardResidualConnection(nn.Module):
         return x + self.dropout(self.layer(self.norm(x)))
 
 
-
 class MaskedOnlyDecoderLayer(nn.Module):
     """
     Used for GPT
@@ -172,6 +172,8 @@ class GPTTimeSeries(nn.Module):
         self, 
         #vocab_size, 
         input_features_size,
+        date_input_features_size,
+        date_features_dim,
         features_dim, 
         output_features_size,
         forecast_size,
@@ -193,6 +195,9 @@ class GPTTimeSeries(nn.Module):
         #self.token_emb = nn.Embedding(vocab_size, features_dim)
         self.input_projection = nn.Linear(input_features_size, features_dim)
         
+        # date information
+        self.date_projection = nn.Linear(date_input_features_size, date_features_dim)
+        
         # Learnable position embbedings
         #self.position_emb = nn.Embedding(max_seq_len, features_dim)
 
@@ -201,7 +206,7 @@ class GPTTimeSeries(nn.Module):
         # NOTE: nn.Sequential can't handle multiple inputs!
         self.dec_layers = nn.ModuleList(
             [MaskedOnlyDecoderLayer(
-                features_dim, 
+                features_dim+date_features_dim, 
                 num_heads, 
                 ff_dim, 
                 attn_dropout_prob, 
@@ -211,10 +216,10 @@ class GPTTimeSeries(nn.Module):
             ) for _ in range(num_decoder_layers)]
         )
         
-        self.layernorm_final = nn.LayerNorm(features_dim)
+        self.layernorm_final = nn.LayerNorm(features_dim+date_features_dim)
 
         #self.vocab_projection = nn.Linear(features_dim, vocab_size, bias=vocab_projection_bias)
-        self.output_projection = nn.Linear(features_dim, output_features_size, bias=output_features_bias)
+        self.output_projection = nn.Linear(features_dim+date_features_dim, output_features_size, bias=output_features_bias)
         
         self.apply(self._init_weights)
         
@@ -239,14 +244,18 @@ class GPTTimeSeries(nn.Module):
         
         return pe.unsqueeze(0)
  
-    def forward(self, x_input, pad_mask=None):
+    def forward(self, x_input, date_input, pad_mask=None):
         _batch_size, _seq_len, _ = x_input.size()
 
         #_token_emb = self.token_emb(x_input)
         _token_emb = self.input_projection(x_input)
+        _date_emb = self.date_projection(date_input)
         
         _position_emb = self.generate_positional_embbedings(_seq_len).to(x_input.device)
         x_input = self.emb_dropout_prob(_token_emb + _position_emb)
+
+        # concat date features
+        x_input = torch.cat((x_input, _date_emb), dim=2)
         
         # Self attenting Masked MHA
         for _dec_layer in self.dec_layers:
