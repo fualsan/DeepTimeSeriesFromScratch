@@ -248,7 +248,7 @@ class GPTTimeSeries(nn.Module):
         date_features_dim,
         features_dim, 
         output_features_size,
-        forecast_size,
+        #forecast_size,
         num_heads, 
         ff_dim, 
         num_decoder_layers,
@@ -261,7 +261,7 @@ class GPTTimeSeries(nn.Module):
     ):
         super().__init__()
         self.features_dim = features_dim
-        self.forecast_size = forecast_size
+        #self.forecast_size = forecast_size
 
         #self.token_emb = nn.Embedding(vocab_size, features_dim)
         self.input_projection = nn.Linear(input_features_size, features_dim)
@@ -335,7 +335,7 @@ class GPTTimeSeries(nn.Module):
         x_input = self.layernorm_final(x_input)
 
         # Slice forecast
-        x_input = x_input[:, -self.forecast_size:, :]
+        #x_input = x_input[:, -self.forecast_size:, :]
         
         # Convert output features
         #x_input = self.vocab_projection(x_input)
