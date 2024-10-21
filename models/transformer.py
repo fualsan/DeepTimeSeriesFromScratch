@@ -115,7 +115,7 @@ class AttentionResidualConnection(nn.Module):
         self.dropout = nn.Dropout(dropout_prob)
 
     def forward(self, q, k, v, mask):
-        return q + self.dropout(self.layer(self.norm(q), self.norm(k), self.norm(v), mask))
+        return q + self.dropout(self.norm(self.layer(q, k, v, mask)))
 
 
 class FeedForwardResidualConnection(nn.Module):
@@ -130,7 +130,8 @@ class FeedForwardResidualConnection(nn.Module):
         self.dropout = nn.Dropout(dropout_prob)
 
     def forward(self, x):
-        return x + self.dropout(self.layer(self.norm(x)))
+        #return x + self.dropout(self.layer(self.norm(x)))
+        return x + self.dropout(self.norm(self.layer(x)))
 
 
 class EncoderLayer(nn.Module):
